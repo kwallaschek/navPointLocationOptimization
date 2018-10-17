@@ -16,7 +16,7 @@ struct locations{
 // If there are no new locations pairs it sets bool finished in location structure.
 locations* getNewLocations(int numNodes)
 {
-	// TODO
+	// TODO ajsfghsö
 }
 
 
