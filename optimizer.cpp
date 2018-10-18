@@ -11,7 +11,11 @@ This class provides the needed functions for generating new location vectors and
 #include "stack.h"
 #include "simpleLinkedList.h"
 
-#define NUM_NODES 3
+int NUM_NODES = 3;
+
+int minimalATT = 9999999;
+int minimalCoordinates = 00;
+
 struct Location{
 	int x;
 	int y;
@@ -124,6 +128,11 @@ bool isArrayValid(int* array){
 }
 
 bool saveResults(int att, int locs) {
+	if (att<minimalATT){
+		minimalATT = att;
+		minimalCoordinates = locs;
+		return true;
+	}
 	return false;
 }
 
