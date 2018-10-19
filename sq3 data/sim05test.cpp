@@ -23,7 +23,8 @@
 #define CAR_FILE06	"test1.txt"
 #define PARK_FILE	"park_sq3.txt"
 #define LXY_FILE	"lxy_sq3.txt"
-#define NAVI_FILE   "navi_sq3.txt"	//追加の案内制限
+//#define NAVI_FILE   "navi_sq3.txt"	//追加の案内制限
+#define LOCATE_FILE	"location_sq3.txt"
 #define MAX_LINK 104
 #define MAX_NODE 44
 #define MAX_CAR 80
@@ -51,13 +52,13 @@ struct node{
 };
 
 struct car{
-	float st;	//start time
+	float st;			//start time
 	int s;	int t;
-	int pl;	//park location
-	float pt;	//park time
-	float tt;	//trip time;
+	int pl;				//park location
+	float pt;			//park time
+	float tt;			//trip time;
 	int path[MAX_PATH];	//走っていく経路（交差点番号列）
-	int gbf;	//go or back flag. -1:stop 0:go, 1:park, 2:back, 3:arrive
+	int gbf;			//go or back flag. -1:stop 0:go, 1:park, 2:back, 3:arrive
 };
 
 struct park{
@@ -66,11 +67,19 @@ struct park{
 	int more;
 };
 
-struct navi{
+/*struct navi{
 	//int nn;  要らなかったやつ
 
 	int co;
 	int na[44];
+};*/
+
+struct location{
+	int x;
+	int y;
+	int cn;
+	int np[44];
+	bool finished;
 };
 
 
@@ -78,10 +87,12 @@ struct link l[MAX_LINK];
 struct node n[MAX_NODE];
 struct car	c[MAX_CAR];
 struct park p[MAX_PARK];
-struct navi v[MAX_NAVI];
+//struct navi v[MAX_NAVI];
+struct location loc[MAX_NAVI];
 
 int search_lnum(int,int);
 int search_pnum(int);
+
 
 int distance[MAX_NODE],flag[MAX_NODE],before[MAX_NODE];
 
@@ -90,31 +101,24 @@ int distance[MAX_NODE],flag[MAX_NODE],before[MAX_NODE];
 メイン関数
 ==============================
 */
-void main()	
+float simulate(location loc, int numNodes)	
 {
-
 	void init_struct(void);
 	void file_read(void);
 	void flowout(float);
 	void start(float);
 	void parkout(float);
-	void calc_ttime(void);
+	float calc_ttime();
 	void check(void);
-
+	float ttave;
 	float t;
 	int i,j,k;
 	init_struct();	//	構造体の初期化
 	file_read();	//	ファイルからのデータ読み出し
+
 	
 	for(t=0;t<MAX_TIME;t+=0.5)
 	{
-		printf("\n%4.1f ",t);
-		if(int(t+0.5)%10==0 && (int)t%10!=0)
-		{
-			printf("+");
-		}else{
-			printf(".");
-		}
 		flowout(t);	//	交差点からの流出処理
 		i=0;
 		while(i<MAX_LINK && l[i].s!=-1)
@@ -151,12 +155,13 @@ void main()
 		}*/
 	//	getchar();
 	}
-	calc_ttime();	//	平均旅行時間の計算
+	ttave = calc_ttime();	//	平均旅行時間の計算
 	//getchar();
 	if(CHECK==1){//時間差確認
 		check();
 	}
 	//fclose(ch);
+	return ttave;
 
 }
 
@@ -191,14 +196,26 @@ void init_struct(void)
 		p[i].nnum=p[i].capacity=p[i].more=-1;
 	}
 
-	for(i=0;i<MAX_NAVI;i++)//追加分の初期化
+	/*for(i=0;i<MAX_NAVI;i++)//追加分の初期化
 	{
 		v[i].co=-1;
 		for(j=0;j<44;j++)
 		{
 			v[i].na[j]=-1;
 		}
+	}*/
+
+	for(i=0;i<MAX_NAVI;i++)		//test
+	{
+		loc[i].x=-1;
+		loc[i].y=-1;
+		loc[i].cn=-1;
+		for(j=0;j<44;j++)
+		{
+			loc[i].np[j]=-1;
+		}
 	}
+
 }
 
 /*	ファイルからのデータ読み出し	*/
@@ -246,9 +263,9 @@ void file_read()
 	}
 	fclose(fp);
 	
-	i=0;
+	//i=0;
 	int j;
-	fp=fopen(NAVI_FILE,"r");
+	/*fp=fopen(NAVI_FILE,"r");
 	while(EOF!=fscanf(fp," %d",&v[i].co) && i<MAX_NAVI)
 	{
 		for(j=0;j<v[i].co;j++)
@@ -258,6 +275,22 @@ void file_read()
 			//printf("%d  \n",v[i].na[j]);
 		}
 		i+=1;
+	}
+	fclose(fp);*/
+
+	i=0;
+	j=0;
+	fp=fopen(LOCATE_FILE,"r");
+	while(i<MAX_NAVI && EOF!=fscanf(fp,"%d %d %d",&loc[i].x,&loc[i].y,&loc[i].cn))		//test
+	{
+			//printf("%d  \n",loc[i].x);
+			for(j=0;j<loc[i].cn;j++)
+			{
+			
+				fscanf(fp,"%d",&loc[i].np[j]);
+				//printf("%d  \n",loc[i].np[j]);
+			}
+			i+=1;
 	}
 	fclose(fp);
 
@@ -385,7 +418,7 @@ void start(float t)
 			}else{
 				c[j].st+=0.5;
 				c[j].tt+=0.5;
-				c[j].pl=-1;						//AAAAAA
+				c[j].pl=-1;						
 			}
 		}
 		j+=1;
@@ -456,10 +489,10 @@ int search_pnum(int nnum)
 }
 
 /*	平均旅行時間の計算	*/
-void calc_ttime(void)
+float calc_ttime()
 {
-	float ttave=0;
-	int i=0;
+	int i = 0;
+	float ttave = 0;
 	/*if(sel==6)
 	{
 		while(i<sum_p && c[i].tt!=0)
@@ -476,10 +509,7 @@ void calc_ttime(void)
 		}
 	//}
 	ttave/=(float)i;
-	printf("\naverage of trip time : %f [sec]",ttave);
-	printf("\ncar number           : %d [cars]\n",i);
-	printf("データの取り忘れに注意！！\n");
-	printf("同階層に車両データのファイルがあるのでその保存も忘れずに！！\n");
+	return ttave;
 }
 
 /*	これからの走行ルートをコピー	*/
@@ -822,12 +852,12 @@ float f4(float x,float a)
 		//printf("a=%lf",a);
 		//getchar();
 		
-		for(i=0;i<v[(int)x].co;i++)
+		for(i=0;i<loc[(int)x].cn;i++)
 		{
 			p=0;
 			//printf("v[%d].na[%d]=%d",(int)x,i,v[(int)x].na[i]);
 			//getchar();
-			if(v[(int)x].na[i]!=-1 && a==1)
+			if(loc[(int)x].np[i]!=-1 && a==1)
 			{
 				p=1;
 				//printf("p=%d",p);
