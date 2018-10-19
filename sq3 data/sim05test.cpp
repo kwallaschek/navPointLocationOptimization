@@ -1,7 +1,7 @@
 /*	pg16sim1.cpp
 ##########
-駐車場案内用
-セルオートマトンシミュレータ
+for guide parking 
+cell automaton simulater
 ##########
 	Teruomi KATORI
 	2007 Katori Lab. all rights reserved
@@ -9,9 +9,8 @@
 	10/feb/09 ==> 13/feb/09		経路探索部の補綴
 	26/apr/16					角度計算の追加
 
-実行には
- LINK_FILE, CAR_FILE, PARK_FILE
-が必要です。
+Execution is need " LINK_FILE, CAR_FILE, PARK_FILE "
+
 1 cell = 5[m], 1 unit time = 0.5[sec] because v=36[km/h]
 */
 #include <stdio.h>
@@ -23,23 +22,23 @@
 #define CAR_FILE06	"test1.txt"
 #define PARK_FILE	"park_sq3.txt"
 #define LXY_FILE	"lxy_sq3.txt"
-//#define NAVI_FILE   "navi_sq3.txt"	//追加の案内制限
-#define LOCATE_FILE	"location_sq3.txt"
+//#define NAVI_FILE   "navi_sq3.txt"	//additions of guide limit
+#define LOCATE_FILE	"location_sq3.txt"	//additions of guide limit
 #define MAX_LINK 104
 #define MAX_NODE 44
 #define MAX_CAR 80
 #define MAX_PARK 4
-#define MAX_NAVI 44		//追加の案内制限の箇所
+#define MAX_NAVI 44		// additions of guide limit
 #define MAX_TIME 10000	// =[sec]
 #define MAX_LENGTH 1000	// = 500[m]
 #define MAX_PATH 52
-#define G_METHOD 1		//駐車場案内方法(0-7) 2bit:駐車場管理者、1bit:道路管理者、0bit:ドライバー、角度は必ず採用 	
-#define BEACON 0		//ビーコン設置リンク 0:なし 1:データどおり 2:全リンク　
-#define ANNNAI 0		//案内制限　0:なし　1:あり
-#define CHECK 1			//時間差確認用 0:なし　1:あり
+#define G_METHOD 1		//guide parking method(0-7)use or not 2bit:parking manager、1bit:road manager、0bit:driver、angle is need always 	
+#define BEACON 0		//Beacon installation link 0:dont 1:According to data 2:all link　
+#define ANNNAI 0		//guide limit　0:dont　1:do
+#define CHECK 1			//for confirmation vehicle's trip time 0:dont　1:do
 
 struct link{
-	int s;	//流出入
+	int s;	//flowin flowout
 	int t;	//[s]
 	int l;	//[m]
 	int b;	//beacon
@@ -57,7 +56,7 @@ struct car{
 	int pl;				//park location
 	float pt;			//park time
 	float tt;			//trip time;
-	int path[MAX_PATH];	//走っていく経路（交差点番号列）
+	int path[MAX_PATH];	//driving path
 	int gbf;			//go or back flag. -1:stop 0:go, 1:park, 2:back, 3:arrive
 };
 
@@ -113,17 +112,17 @@ float simulate(location loc, int numNodes)
 	float ttave;
 	float t;
 	int i,j,k;
-	init_struct();	//	構造体の初期化
-	file_read();	//	ファイルからのデータ読み出し
+	init_struct();	//	Initialize of struct
+	file_read();	//	read file
 
 	
 	for(t=0;t<MAX_TIME;t+=0.5)
 	{
-		flowout(t);	//	交差点からの流出処理
+		flowout(t);	//	flowout process
 		i=0;
 		while(i<MAX_LINK && l[i].s!=-1)
 		{
-			/*	隣の空きセルへ前進	*/
+			/*	move next vacant cell	*/
 			for(j=(int)l[i].l/5-1;j>=0;j--)
 			{
 				
@@ -136,12 +135,12 @@ float simulate(location loc, int numNodes)
 			
 			i+=1;
 		}
-		start(t);	//	出発
-		parkout(t);	//	駐車場からの出庫
+		start(t);	
+		parkout(t);	
 			//printf("\n");printf("22 = %d\n",p[0].capacity-p[0].more);if(t>=1000){getchar();}
 			
 
-	/*	for(i=0;i<MAX_CAR;i++)//パス取りの確認用
+	/*	for(i=0;i<MAX_CAR;i++)// check path 
 		{
 			printf("\n%d",i);
 			for(j=0;j<MAX_PATH;j++)
@@ -155,9 +154,9 @@ float simulate(location loc, int numNodes)
 		}*/
 	//	getchar();
 	}
-	ttave = calc_ttime();	//	平均旅行時間の計算
+	ttave = calc_ttime();	//	average trip time calculate
 	//getchar();
-	if(CHECK==1){//時間差確認
+	if(CHECK==1){	// each vehicle's trip time
 		check();
 	}
 	//fclose(ch);
@@ -165,7 +164,7 @@ float simulate(location loc, int numNodes)
 
 }
 
-/*	構造体の初期化	*/
+/*	initialize struct	*/
 void init_struct(void)
 {
 	int i,j;
@@ -196,7 +195,7 @@ void init_struct(void)
 		p[i].nnum=p[i].capacity=p[i].more=-1;
 	}
 
-	/*for(i=0;i<MAX_NAVI;i++)//追加分の初期化
+	/*for(i=0;i<MAX_NAVI;i++)//追加分の初期化 
 	{
 		v[i].co=-1;
 		for(j=0;j<44;j++)
@@ -205,7 +204,7 @@ void init_struct(void)
 		}
 	}*/
 
-	for(i=0;i<MAX_NAVI;i++)		//test
+	for(i=0;i<MAX_NAVI;i++)		
 	{
 		loc[i].x=-1;
 		loc[i].y=-1;
@@ -218,7 +217,7 @@ void init_struct(void)
 
 }
 
-/*	ファイルからのデータ読み出し	*/
+/*	read file	*/
 void file_read()
 {
 	int i,num;
@@ -281,7 +280,7 @@ void file_read()
 	i=0;
 	j=0;
 	fp=fopen(LOCATE_FILE,"r");
-	while(i<MAX_NAVI && EOF!=fscanf(fp,"%d %d %d",&loc[i].x,&loc[i].y,&loc[i].cn))		//test
+	while(i<MAX_NAVI && EOF!=fscanf(fp,"%d %d %d",&loc[i].x,&loc[i].y,&loc[i].cn))
 	{
 			//printf("%d  \n",loc[i].x);
 			for(j=0;j<loc[i].cn;j++)
@@ -296,7 +295,7 @@ void file_read()
 
 }
 
-/*	交差点からの流出処理	*/
+/*	intersection flowout processing	*/
 void flowout(float t)
 {
 	void dijkstra(int,int *,int *,int *);
@@ -320,14 +319,14 @@ void flowout(float t)
 			{
 				j+=1;
 			}
-			if(j==MAX_PATH)	//	到着済み車両ははじく
+			if(j==MAX_PATH)	//	remove vehicle that arrived at destination 
 			{
 				continue;
 			}
 			if(c[cnum].path[j+1]==-1)
 			{
 //printf("着");
-				if(c[cnum].gbf==2 && c[cnum].path[j]==c[cnum].s)	//	出発地に戻った場合
+				if(c[cnum].gbf==2 && c[cnum].path[j]==c[cnum].s)	//	if vehicle return origin
 				{
 					l[i].cell[l[i].l/5]=-1;
 					c[cnum].path[j]=-1;
@@ -339,10 +338,10 @@ void flowout(float t)
 //getchar();
 					continue;
 				}
-				if(c[cnum].gbf==0 && c[cnum].path[j]==c[cnum].pl)	//	駐車場に到着した場合
+				if(c[cnum].gbf==0 && c[cnum].path[j]==c[cnum].pl)	//	if vehicle arrived at parking
 				{
 					pnum=search_pnum(c[cnum].pl);
-					if(p[pnum].more>0)		//	駐車場に停められる場合
+					if(p[pnum].more>0)		//	if vehicle can park in the parking
 					{
 						l[i].cell[l[i].l/5]=-1;
 						c[cnum].gbf=1;
@@ -352,9 +351,9 @@ void flowout(float t)
 						c[cnum].st=t+c[cnum].pt+(float)distance[c[cnum].t]*2*3600/4000;	//最後の項は徒歩往復時間
 						p[pnum].more-=1;
 //printf("可 %4.1f = %4.1f + %4.1f + %4.1f",c[cnum].st,t,c[cnum].pt,(float)distance[c[cnum].t]*2*3600/4000);
-					}else{					//	駐車場が満車の場合
-						c[cnum].pl=det_park(c[cnum].pl,c[cnum].t);	//	新c[cnum].plとして別（近隣？）の駐車場を決定（探す）
-						copy_route(cnum,p[pnum].nnum,c[cnum].pl);	//	c[cnum].path[j]からc[cnum].plまでの経路コピー関数
+					}else{					//	if parking is full
+						c[cnum].pl=det_park(c[cnum].pl,c[cnum].t);	//	as new c[cnum].pl	search other parking
+						copy_route(cnum,p[pnum].nnum,c[cnum].pl);	//	copy route function from c[cnum].path[j] to c[cnum].pl
 						lnum=search_lnum(c[cnum].path[0],c[cnum].path[1]);
 						if(l[lnum].cell[0]==-1)
 						{
@@ -369,8 +368,8 @@ void flowout(float t)
 					}
 					continue;
 				}
-			}else{	//	単なる交差点流出
-				if(c[cnum].gbf==0 && l[i].b==1)	//ビーコン設置箇所のみ
+			}else{	//	intersection flowout
+				if(c[cnum].gbf==0 && l[i].b==1)	// Only installation beacon
 				{
 					c[cnum].pl=det_park(l[i].t,c[cnum].t);
 					copy_route(cnum,l[i].t,c[cnum].pl);
@@ -391,7 +390,7 @@ void flowout(float t)
 	}
 }
 
-/*	出発	*/
+/*	start	*/
 void start(float t)
 {
 	int det_park(int, int);
@@ -405,9 +404,9 @@ void start(float t)
 		if(c[j].st==t && c[j].pl==-1)
 		{
 			//printf("a");
-			c[j].pl=det_park(c[j].s,c[j].t);		//	駐車場の決定関数
+			c[j].pl=det_park(c[j].s,c[j].t);		//	decide parking function
 			//printf("%d",c[j].pl);	
-			copy_route(j,c[j].s,c[j].pl);	//	c[j].sからc[j].plまでの経路コピー関数
+			copy_route(j,c[j].s,c[j].pl);	//	copy route function from c[j].s to c[j].pl
 			lnum=search_lnum(c[j].path[0],c[j].path[1]);
 			if(l[lnum].cell[0]==-1)
 			{
@@ -425,7 +424,7 @@ void start(float t)
 	}
 }
 
-/*	駐車場からの出庫	*/
+/*	leave  paking	*/
 void parkout(float t)
 {
 	void copy_route(int,int,int);
@@ -439,9 +438,9 @@ void parkout(float t)
 		{
 //			printf("*");
 //			getchar();
-			copy_route(j,c[j].pl,c[j].s);	//	c[j].plからc[j].sまでの経路コピー関数
+			copy_route(j,c[j].pl,c[j].s);	//	copy route funciton from c[j].pl to c[j].s
 			lnum=search_lnum(c[j].path[0],c[j].path[1]);
-			if(l[lnum].cell[0]==-1)	//出庫
+			if(l[lnum].cell[0]==-1)	//
 			{
 				pnum=search_pnum(c[j].path[0]);
 				p[pnum].more+=1;
@@ -450,7 +449,7 @@ void parkout(float t)
 
 				c[j].gbf=2;
 //printf(" 出庫 %d : %d %d %d %d %d %d %d",j,c[j].path[0],c[j].path[1],c[j].path[2],c[j].path[3],c[j].path[4],c[j].path[5],c[j].path[6]);
-			}else{	//足止め
+			}else{	//stop
 				c[j].st+=0.5;
 
 			}
@@ -459,7 +458,7 @@ void parkout(float t)
 	}
 }
 
-/*	リンク番号の検索	*/
+/*	search link's number	*/
 int search_lnum(int s,int t)
 {
 	int i;
@@ -473,7 +472,7 @@ int search_lnum(int s,int t)
 	return i;
 }
 
-/*	駐車場番号の検索	*/
+/*	search parking number	*/
 int search_pnum(int nnum)
 {
 	int i=0;
@@ -488,7 +487,7 @@ int search_pnum(int nnum)
 	return i;
 }
 
-/*	平均旅行時間の計算	*/
+/*	Average trip time calculation	*/
 float calc_ttime()
 {
 	int i = 0;
@@ -512,7 +511,7 @@ float calc_ttime()
 	return ttave;
 }
 
-/*	これからの走行ルートをコピー	*/
+/*	Copy of future traveling route	*/
 void copy_route(int cnum,int tmp,int terminal)
 {
 
@@ -540,7 +539,7 @@ void copy_route(int cnum,int tmp,int terminal)
 
 /*
 ==============================
-dijkstra法による最短パス探索
+search shortest path by dijkstra method 
 ==============================
 */
 void dijkstra(int s,int *distance,int *flag,int *before)
@@ -564,7 +563,7 @@ void dijkstra(int s,int *distance,int *flag,int *before)
 
 /*
 ------------------------------
-経路探索用配列の初期化
+Initialization of route search array
 ------------------------------
 */
 void first_dim(int *distance,int *flag,int *before)
@@ -580,7 +579,7 @@ void first_dim(int *distance,int *flag,int *before)
 
 /*
 ------------------------------
-枝のばし
+branching
 ------------------------------
 */
 void grow_branch(int now,int *distance,int *flag,int *before)
@@ -601,7 +600,7 @@ void grow_branch(int now,int *distance,int *flag,int *before)
 
 /*
 ------------------------------
-最小のものを探す
+search minimum weight
 ------------------------------
 */
 int sort_min(int *number,int *flag,int loop_count)
@@ -627,8 +626,8 @@ int sort_min(int *number,int *flag,int loop_count)
 
 /*
 ==============================
-駐車場決定関数
-最終的に案内する駐車場の番号
+decide parking function
+Finally guide number of parking 
 ==============================
 */
 int det_park(int now,int terminal)
@@ -643,7 +642,7 @@ int det_park(int now,int terminal)
 	int maxnum=-1;
 	int i,j;
 
-	//printf("%d,%d",now,terminal); //テスト用
+	//printf("%d,%d",now,terminal); //for test
 
 	for(i=0;i<MAX_PARK;i++)
 	{
@@ -653,7 +652,7 @@ int det_park(int now,int terminal)
 			cond[i][j]=0;
 		}
 	}
-	//	条件１
+	//	conditions1 f1
 	dijkstra(now,&distance[0],&flag[0],&before[0]);
 //	printf(" %f",cond[i][0]);
 	for(i=0;i<MAX_PARK;i++)
@@ -662,23 +661,23 @@ int det_park(int now,int terminal)
 		//printf("cond[%d][1]=%lf",i,cond[i][1]);
 		//getchar();
 	}
-	//	条件０
+	//	conditions0 f0
 	dijkstra(terminal,&distance[0],&flag[0],&before[0]);
 	for(i=0;i<MAX_PARK;i++)
 	{
 		cond[i][0]=(float)distance[p[i].nnum];
 	}
-	//	条件２
+	//	conditions2 f2
 	for(i=0;i<MAX_PARK;i++)
 	{
 		cond[i][2]=(float)((p[i].capacity-p[i].more)/p[i].capacity);
 	}
-	//	条件３
+	//	conditions3 f3
 	for(i=0;i<MAX_PARK;i++)
 	{
 		cond[i][3]=(float)degree(now,p[i].nnum,terminal);
 	}
-	//追加分
+	//additions conditions
 	for(i=0;i<MAX_PARK;i++)
 	{
 		cond[i][4]=now;
@@ -697,8 +696,8 @@ int det_park(int now,int terminal)
 		}
 	}
 
-	//どこにも割り当てられなかった場合は、目的地に一番近い駐車場へ。
-	//目的地に一番近い駐車場では入庫待ち渋滞。
+	//。If it can not be assigned anywhere, guide to nearest parking to destination
+	//In the parking nearest to the destination, there is a traffic jam queue.
 	if(maxnum==-1)
 	{
 		maxprob=99999;
@@ -714,7 +713,7 @@ int det_park(int now,int terminal)
 	return p[maxnum].nnum;
 }
 
-/*	角度の計算	*/
+/*	angle calculation	*/
 float degree(int now,int pnum,int goal)
 {
 	double ai,aj,bi,bj;
@@ -740,23 +739,23 @@ float degree(int now,int pnum,int goal)
 
 }
 
-/*	ファジイ演算によるその駐車場に案内する度合い	*/
+/*	Degree of guiding to the parking lot by fuzzy calculation	*/
 float fuzzy(float cond[MAX_PARK][5],int i)
 {
 	float f0(float);
 	float f1(float);
 	float f2(float);
 	float f3(float);
-	float f4(float,float);//案内制限の追加用
+	float f4(float,float);// additions of guide limit
 	float min(float []);
 	float prob[5]={999,999,999,999,999};
 
-	prob[0]=f0(cond[i][0]);	//目的地から駐車場までの距離	
-	prob[1]=f1(cond[i][1]);	//流入口から駐車場までの距離
-	prob[2]=f2(cond[i][2]);	//駐車場占有率
-	prob[3]=f3(cond[i][3]);	//目的地と駐車場のなす角度
+	prob[0]=f0(cond[i][0]);	//	distance from destination to parking
+	prob[1]=f1(cond[i][1]);	//	distance from origins to parking
+	prob[2]=f2(cond[i][2]);	//	parking occupancy
+	prob[3]=f3(cond[i][3]);	//	angle between destination and parking
 	if(ANNNAI==1){
-		prob[4]=f4(cond[i][4],prob[0]); //案内制限用
+		prob[4]=f4(cond[i][4],prob[0]); // for guide limit
 		//printf("%d",(int)cond[i][4]);
 		//getchar();
 		//printf("prov[4]=%d",(int)prob[4]);
@@ -766,7 +765,7 @@ float fuzzy(float cond[MAX_PARK][5],int i)
 	return min(prob);
 }
 
-/*	最小の度合いを求める	*/
+/*	search minimum degree	*/
 float min(float prob[5])
 {
 	float fmin=999;
@@ -782,7 +781,7 @@ float min(float prob[5])
 	return fmin;
 }
 
-/*	ドライバー（目的地に近いところに駐車したい）*/
+/*	driver (want to nearest parking to the destination) */
 float f0(float x)
 {
 	float p=1;
@@ -796,7 +795,7 @@ float f0(float x)
 	return p;
 }
 
-/*	管理者（あまり走らせたくない）	*/
+/*	manager(dont want to run much)	*/
 float f1(float x)
 {
 	float p=1;
@@ -810,7 +809,7 @@ float f1(float x)
 	return p;
 }
 
-/*	駐車場（偏りのない利用状況）*/
+/*	parking(no difference usage status)*/
 float f2(float x)
 {
 	float p=1;
@@ -824,7 +823,7 @@ float f2(float x)
 	return p;
 }
 
-/*	現在地から駐車場と目的地のなす角度	*/
+/* angle between parking and destination from now location	*/
 float f3(float x)
 {
 	float p;
@@ -836,7 +835,7 @@ float f3(float x)
 	return p;
 }
 
-/*追加の案内箇所制限の処理*/
+/*additions of guide limit process*/
 float f4(float x,float a)
 {
 	//float f0(float);
@@ -848,7 +847,7 @@ float f4(float x,float a)
 	//printf("%f",x);getchar();
 	//for(x=0;x<MAX_NAVI;x++)
 	//{
-		//a=f0(b);//一番近い駐車場
+		//a=f0(b);// nearest parking
 		//printf("a=%lf",a);
 		//getchar();
 		
@@ -875,23 +874,24 @@ float f4(float x,float a)
 	//}
 }
 
-/*時間差確認用*/
+/*for confirmation each vehicle's trip time */
 void check(void)
 {
 	
 	int i;
-	FILE *outputfile;         // 出力ストリーム
+	FILE *outputfile;         // output stream
   
-	outputfile = fopen("check-out.txt", "w");  // ファイルを書き込み用にオープン(開く)
+	outputfile = fopen("check-out.txt", "w");  // open writing file
 	
 		for(i=0;i<MAX_CAR;i++){
-			fprintf(outputfile, "%f %d\n",c[i].tt,c[i].pl); // ファイルに書く
+			fprintf(outputfile, "%f %d\n",c[i].tt,c[i].pl); // write
 		}	
-	fclose(outputfile);          // ファイルをクローズ(閉じる)
+	fclose(outputfile);          // file close 
 	
 }
 
-/*void route(int cnum int j)
+/* dont use
+void route(int cnum int j)
 {
 	int i;
 	for(i=j;i>=0;i--)
@@ -901,18 +901,3 @@ void check(void)
 	fclose(ch);
 }*/
 
-
-
-
-//車両のルート　テキスト出力
-//gメソッドで最上位bit(駐車場)が１のときドライバーがランダムで指示に従わない
-//目的地流入台数固定化
-	//NAVIファイルのリンクデータ修正
-
-
-
-
-//g			1	5	5
-//beacon	0	1	2
-//annai		0	1	0
-//		　なし komakaku zenchiten
