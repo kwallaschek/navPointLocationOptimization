@@ -17,6 +17,7 @@ Execution is need " LINK_FILE, CAR_FILE, PARK_FILE "
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include "sim05test.h"
 
 #define LINK_FILE	"link_sq3.txt"
 #define CAR_FILE06	"test1.txt"
@@ -73,13 +74,7 @@ struct park{
 	int na[44];
 };*/
 
-struct location{
-	int x;
-	int y;
-	int cn;
-	int np[44];
-	bool finished;
-};
+
 
 
 struct link l[MAX_LINK];
@@ -95,12 +90,18 @@ int search_pnum(int);
 
 int distance[MAX_NODE],flag[MAX_NODE],before[MAX_NODE];
 
+
+
 /*
 ==============================
 ƒƒCƒ“ŠÖ”
 ==============================
 */
-float simulate(location loc, int numNodes)	
+// You receive multiple locations not only one!
+// So simulate receives multiple locations -> numLocations many
+// -> loc is an array of size numLocations
+// -> loc = loc[numLocations]
+float simulate(location* loc, int numLocations)	
 {
 	void init_struct(void);
 	void file_read(void);

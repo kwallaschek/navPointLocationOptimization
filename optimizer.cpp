@@ -10,6 +10,7 @@ This class provides the needed functions for generating new location vectors and
 #include <math.h>
 #include "stack.h"
 #include "simpleLinkedList.h"
+#include "sim05test.h"
 
 int NUM_NODES = 3;
 
@@ -99,14 +100,14 @@ bool checkForDuplicateSingleLocations(int* locs){
 }
 
 
-Location * transformArrayToLocations(int* array){
+location * transformArrayToLocations(int* array){
 	
 	int i = NUM_NODES*2-1;
 	int j = 0;
-	Location* locs;
+	location* locs;
 	while (i>=0){
 		
-		Location loc = {array[i],array[i-1]};
+		location loc = {array[i],array[i-1]};
 		
 		locs[j] = loc;
 		
@@ -127,7 +128,7 @@ bool isArrayValid(int* array){
 	return false;
 }
 
-bool saveResults(int att, int locs) {
+bool saveResults(float att, int locs) {
 	if (att<minimalATT){
 		minimalATT = att;
 		minimalCoordinates = locs;
@@ -147,20 +148,28 @@ int main () {
 
 	struct Stack* stackOfLocations = createStack(pow(64,NUM_NODES));
 	
+	int size = 0;
 	while (!isEmpty(stack)){
 		int x = pop(stack);
 		
 		int * array = convertOctettToArray(x);
 		if (isArrayValid(array)){
+			size++;
 			push(stackOfLocations, x);
 		}
 	}
 
-	/*while (!isEmpty(stackOfLocations)){
+	int counter = 1;
+
+	while (!isEmpty(stackOfLocations)){
 		int x = pop(stackOfLocations);
-		saveResults(simulate(transformArrayToLocations(x)), x);
+		printf("\r%c[2K Simulating %d of %d...",27,counter,size);
+		float att = simulate(transformArrayToLocations(convertOctettToArray(x)),NUM_NODES);
+	
+		saveResults(0.0, x);
+		counter++;
 	}
-	*/
+	printf("\n Finished \n");
 	/*while (!isEmpty(stackOfLocations)){
 		printf("%o\n", pop(stackOfLocations));
 	}*/
