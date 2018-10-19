@@ -1,4 +1,4 @@
-/*	pg16sim1.cpp
+/* 	pg16sim1.cpp
 ##########
 for guide parking 
 cell automaton simulater
