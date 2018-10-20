@@ -10,21 +10,16 @@ This class provides the needed functions for generating new location vectors and
 #include <math.h>
 #include "stack.h"
 #include "simpleLinkedList.h"
-#include "sim05test.h"
+#include "sq3_data/sim05test.h"
 
 int NUM_NODES = 3;
 
 int minimalATT = 9999999;
 int minimalCoordinates = 00;
 
-struct Location{
-	int x;
-	int y;
-};
 
 // SOURCE: https://stackoverflow.com/questions/515612/convert-an-integer-number-into-an-array
 int * convertOctettToArray(int number){
-	
 	int * arr = new int[NUM_NODES*2];
     int i = 0;
     do {
@@ -104,17 +99,56 @@ location * transformArrayToLocations(int* array){
 	
 	int i = NUM_NODES*2-1;
 	int j = 0;
-	location* locs;
+	location locs[44];
+
+	NODE* head;
+	NODE* node;
+	DATA loc_node;
+	init(&head);
+	// Fill list with Locations
 	while (i>=0){
-		
-		location loc = {array[i],array[i-1]};
-		
-		locs[j] = loc;
-		
+		loc_node.x = array[i-1];
+		loc_node.y = array[i];
+		head = add(head, loc_node);
+		//location loc = {array[i],array[i-1],4, {12,23,29,31}};
+		//location loc = {array[i],array[i-1]};
+		//locs[j] = loc;
 		i-=2;
 		j++;
 	}
-	
+	location tmp = {0,0,0};
+	locs[0] = tmp;
+	location tmp2 = {8,0,0};
+	locs[1] = tmp2;
+	location tmp3 = {8,8,0};
+	locs[2] = tmp3;
+	location tmp4 = {0,8,0};
+	locs[3] = tmp4;
+
+	int counter = 4;
+	//printf("2\n");
+	for (int i = 1; i<8; i++){
+		for (int j = 1; j<8; j++){
+			if (!(i%2 == 0 && j%2 == 0)){
+
+
+			//printf("%d %d %d \n", i,j,counter);
+			loc_node.x = j;
+			loc_node.y = i;
+			if (find(head,loc_node)){
+				location tmp = {j,i,4,{12,23,29,31}};
+				locs[counter] = tmp;
+			} else {
+				location tmp = {j,i,0};
+				locs[counter] = tmp;
+			}
+			counter++;
+		}
+		}
+	}
+	/*for (int i = 0; i<44; i++){
+		printf("%d %d %d\n", locs[i].x,locs[i].y,locs[i].cn);
+	}*/
 	return locs;
 }
 
@@ -163,13 +197,19 @@ int main () {
 
 	while (!isEmpty(stackOfLocations)){
 		int x = pop(stackOfLocations);
-		printf("\r%c[2K Simulating %d of %d...",27,counter,size);
-		float att = simulate(transformArrayToLocations(convertOctettToArray(x)),NUM_NODES);
+		fflush(stdout);
+		printf("\r%c[2K Simulating %d of %d... Current minimal ATT: %d s Testing: %o",27,counter,size, minimalATT,x);
+		fflush(stdout);
+		location * s = transformArrayToLocations(convertOctettToArray(x));
+		float att = simulate(s,NUM_NODES);
 	
-		saveResults(0.0, x);
+		saveResults(att, x);
 		counter++;
 	}
 	printf("\n Finished \n");
+	printf("Best Configuration: %o\n", minimalCoordinates);
+	printf("ATT: %d\n", minimalATT);
+
 	/*while (!isEmpty(stackOfLocations)){
 		printf("%o\n", pop(stackOfLocations));
 	}*/

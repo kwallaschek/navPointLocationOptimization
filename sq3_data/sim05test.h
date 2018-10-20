@@ -6,4 +6,4 @@ struct location{
 	bool finished;
 };
 
-float simulate(location* loc, int numNodes);
+float simulate(location* locations, int numNodes);

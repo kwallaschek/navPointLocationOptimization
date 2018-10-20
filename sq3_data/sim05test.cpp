@@ -19,12 +19,12 @@ Execution is need " LINK_FILE, CAR_FILE, PARK_FILE "
 #include <time.h>
 #include "sim05test.h"
 
-#define LINK_FILE	"link_sq3.txt"
-#define CAR_FILE06	"test1.txt"
-#define PARK_FILE	"park_sq3.txt"
-#define LXY_FILE	"lxy_sq3.txt"
+#define LINK_FILE	"sq3_data/link_sq3.txt"
+#define CAR_FILE06	"sq3_data/test1.txt"
+#define PARK_FILE	"sq3_data/park_sq3.txt"
+#define LXY_FILE	"sq3_data/lxy_sq3.txt"
 //#define NAVI_FILE   "navi_sq3.txt"	//additions of guide limit
-#define LOCATE_FILE	"location_sq3.txt"	//additions of guide limit
+#define LOCATE_FILE	"sq3_data/location_sq3.txt"	//additions of guide limit
 #define MAX_LINK 104
 #define MAX_NODE 44
 #define MAX_CAR 80
@@ -101,21 +101,24 @@ int distance[MAX_NODE],flag[MAX_NODE],before[MAX_NODE];
 // So simulate receives multiple locations -> numLocations many
 // -> loc is an array of size numLocations
 // -> loc = loc[numLocations]
-float simulate(location* loc, int numLocations)	
+float simulate(location* locations, int numLocations)	
 {
 	void init_struct(void);
 	void file_read(void);
 	void flowout(float);
 	void start(float);
 	void parkout(float);
-	float calc_ttime();
+	float calc_ttime(void);
 	void check(void);
 	float ttave;
 	float t;
 	int i,j,k;
+
 	init_struct();	//	Initialize of struct
 	file_read();	//	read file
-
+	for (int i=0; i<numLocations; i++){
+		loc[i] = locations[i];
+	}
 	
 	for(t=0;t<MAX_TIME;t+=0.5)
 	{
@@ -205,7 +208,7 @@ void init_struct(void)
 		}
 	}*/
 
-	for(i=0;i<MAX_NAVI;i++)		
+	/*for(i=0;i<MAX_NAVI;i++)		
 	{
 		loc[i].x=-1;
 		loc[i].y=-1;
@@ -215,6 +218,7 @@ void init_struct(void)
 			loc[i].np[j]=-1;
 		}
 	}
+	*/
 
 }
 
@@ -278,9 +282,11 @@ void file_read()
 	}
 	fclose(fp);*/
 
-	i=0;
+	/*i=0;
 	j=0;
 	fp=fopen(LOCATE_FILE,"r");
+	
+	// ->>> REPLACED in simulate function
 	while(i<MAX_NAVI && EOF!=fscanf(fp,"%d %d %d",&loc[i].x,&loc[i].y,&loc[i].cn))
 	{
 			//printf("%d  \n",loc[i].x);
@@ -293,7 +299,7 @@ void file_read()
 			i+=1;
 	}
 	fclose(fp);
-
+*/
 }
 
 /*	intersection flowout processing	*/
