@@ -514,6 +514,7 @@ float calc_ttime()
 			i+=1;
 		}
 	//}
+
 	ttave/=(float)i;
 	return ttave;
 }

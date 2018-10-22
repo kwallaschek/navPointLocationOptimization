@@ -7,6 +7,7 @@ This class provides the needed functions for generating new location vectors and
 
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 #include "stack.h"
 #include "simpleLinkedList.h"
@@ -171,11 +172,15 @@ bool saveResults(float att, int locs) {
 	return false;
 }
 
-int main () {
+int main (int argc, char *argv[]) {
+
+	if (argv[1] != NULL){
+		NUM_NODES = atoi(argv[1]);
+	}
 
 	struct Stack* stack = createStack(pow(64,NUM_NODES));
 
-
+	printf("Calculating Cases ...\n");
 	for (int i = 00; i<pow(8,NUM_NODES*2+1); i++){
 		push(stack,i);
 	}
