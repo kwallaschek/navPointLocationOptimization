@@ -116,7 +116,7 @@ float simulate(location* locations, int numLocations)
 
 	init_struct();	//	Initialize of struct
 	file_read();	//	read file
-	for (int i=0; i<numLocations; i++){
+	for (int i=0; i<MAX_NAVI; i++){
 		loc[i] = locations[i];
 	}
 	

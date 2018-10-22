@@ -100,7 +100,7 @@ location * transformArrayToLocations(int* array){
 	
 	int i = NUM_NODES*2-1;
 	int j = 0;
-	location locs[44];
+	location * locs = (location *)malloc(sizeof(location) * (45));
 
 	NODE* head;
 	NODE* node;
@@ -147,6 +147,7 @@ location * transformArrayToLocations(int* array){
 		}
 		}
 	}
+	
 	/*for (int i = 0; i<44; i++){
 		printf("%d %d %d\n", locs[i].x,locs[i].y,locs[i].cn);
 	}*/
@@ -206,6 +207,10 @@ int main (int argc, char *argv[]) {
 		printf("\r%c[2K Simulating %d of %d... Current minimal ATT: %d s |Last ATT: %d s |Testing: %o",27,counter,size, minimalATT, lastATT, x);
 		fflush(stdout);
 		location * s = transformArrayToLocations(convertOctettToArray(x));
+
+		/*for(int i = 0 ; i<44; i++){
+			printf("%o,%o\n", s[i].x,s[i].y);
+		}*/
 		float att = simulate(s,NUM_NODES);
 		lastATT = att;
 		saveResults(att, x);
