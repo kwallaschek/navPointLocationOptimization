@@ -199,15 +199,15 @@ int main (int argc, char *argv[]) {
 	}
 
 	int counter = 1;
-
+	int lastATT = 0;
 	while (!isEmpty(stackOfLocations)){
 		int x = pop(stackOfLocations);
 		fflush(stdout);
-		printf("\r%c[2K Simulating %d of %d... Current minimal ATT: %d s Testing: %o",27,counter,size, minimalATT,x);
+		printf("\r%c[2K Simulating %d of %d... Current minimal ATT: %d s |Last ATT: %d s |Testing: %o",27,counter,size, minimalATT, lastATT, x);
 		fflush(stdout);
 		location * s = transformArrayToLocations(convertOctettToArray(x));
 		float att = simulate(s,NUM_NODES);
-	
+		lastATT = att;
 		saveResults(att, x);
 		counter++;
 	}
