@@ -9,6 +9,7 @@ This class provides the needed functions for generating new location vectors and
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 #include "stack.h"
 #include "simpleLinkedList.h"
 #include "sq3_data/sim05test.h"
@@ -175,6 +176,10 @@ bool saveResults(float att, int locs) {
 
 int main (int argc, char *argv[]) {
 
+	clock_t start, startSim, endSim, end;
+	double cpu_time_used;
+
+	start = clock();
 	if (argv[1] != NULL){
 		NUM_NODES = atoi(argv[1]);
 	}
@@ -201,27 +206,36 @@ int main (int argc, char *argv[]) {
 
 	int counter = 1;
 	int lastATT = 0;
+	startSim = clock();
+	endSim = clock();
 	while (!isEmpty(stackOfLocations)){
 		int x = pop(stackOfLocations);
-		fflush(stdout);
-		printf("\r%c[2K Simulating %d of %d... Current minimal ATT: %d s |Last ATT: %d s |Testing: %o",27,counter,size, minimalATT, lastATT, x);
-		fflush(stdout);
-		location * s = transformArrayToLocations(convertOctettToArray(x));
 
-		/*for(int i = 0 ; i<44; i++){
-			printf("%o,%o\n", s[i].x,s[i].y);
-		}*/
+		fflush(stdout);
+		double eta = (double)(((endSim-startSim)/counter)*(size-counter))/(double)CLOCKS_PER_SEC;
+		int minutes = eta/60;
+		int seconds = eta-minutes*60;
+		printf("\r%c[2KSimulating %d of %d... Current minimal ATT: %d s |Last ATT: %d s |Testing: %o | ETA: %d:%02dm",27,counter,size, minimalATT, lastATT, x, minutes, seconds);
+		fflush(stdout);
+
+		location * s = transformArrayToLocations(convertOctettToArray(x));
 		float att = simulate(s,NUM_NODES);
 		lastATT = att;
 		saveResults(att, x);
+		free(s);
+
+		endSim = clock();
 		counter++;
 	}
-	printf("\n Finished \n");
+
+	end = clock();
+	int seconds = (double)(end-start)/(double)CLOCKS_PER_SEC;
+	int hours = seconds/3600;
+	int minutes = (seconds/360)%60;
+	seconds = seconds%60;
+	printf("\nFinished in %d:%02d:%02dh \n", hours, minutes, seconds);
 	printf("Best Configuration: %o\n", minimalCoordinates);
 	printf("ATT: %d\n", minimalATT);
 
-	/*while (!isEmpty(stackOfLocations)){
-		printf("%o\n", pop(stackOfLocations));
-	}*/
 	return(0);
 } 
