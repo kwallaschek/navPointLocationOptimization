@@ -33,9 +33,9 @@ Execution is need " LINK_FILE, CAR_FILE, PARK_FILE "
 #define MAX_TIME 10000	// =[sec]
 #define MAX_LENGTH 1000	// = 500[m]
 #define MAX_PATH 52
-#define G_METHOD 1		//guide parking method(0-7)use or not 2bit:parking manager、1bit:road manager、0bit:driver、angle is need always 	
-#define BEACON 0		//Beacon installation link 0:dont 1:According to data 2:all link　
-#define ANNNAI 0		//guide limit　0:dont　1:do
+#define G_METHOD 5		//guide parking method(0-7)use or not 2bit:parking manager、1bit:road manager、0bit:driver、angle is need always 	
+#define BEACON 1		//Beacon installation link 0:dont 1:According to data 2:all link　
+#define ANNNAI 1		//guide limit　0:dont　1:do
 #define CHECK 1			//for confirmation vehicle's trip time 0:dont　1:do
 
 struct link{
