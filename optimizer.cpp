@@ -12,13 +12,13 @@ This class provides the needed functions for generating new location vectors and
 #include <time.h>
 #include "stack.h"
 #include "simpleLinkedList.h"
-#include "sq3_data/sim05test.h"
+#include "sq3_data/pg16sim01.h"
+
 
 int NUM_NODES = 3;
 
 int minimalATT = 9999999;
 int minimalCoordinates = 00;
-
 
 // SOURCE: https://stackoverflow.com/questions/515612/convert-an-integer-number-into-an-array
 int * convertOctettToArray(int number){
@@ -165,6 +165,7 @@ bool isArrayValid(int* array){
 	return false;
 }
 
+//** !--- OBSOLETE **//
 bool saveResults(float att, int locs) {
 	if (att<minimalATT){
 		minimalATT = att;
@@ -235,7 +236,7 @@ int main (int argc, char *argv[]) {
 	seconds = seconds%60;
 	printf("\nFinished in %d:%02d:%02dh \n", hours, minutes, seconds);
 	printf("Best Configuration: %o\n", minimalCoordinates);
-	printf("ATT: %d\n", minimalATT);
+	printf("ATT: %f\n", minimalATT);
 
 	return(0);
 } 

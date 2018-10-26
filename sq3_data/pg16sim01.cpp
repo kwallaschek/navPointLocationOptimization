@@ -16,12 +16,13 @@
 */
 #include <stdio.h>
 #include <math.h>
+#include <omp.h>
 //#include "pg16sim01.h"
 
-#define LINK_FILE	"link_sq3.txt"
-#define CAR_FILE	"test2.txt"
-#define PARK_FILE	"park_sq3.txt"
-#define LXY_FILE	"lxy_sq3.txt"
+#define LINK_FILE	"sq3_data/link_sq3.txt"
+#define CAR_FILE	"sq3_data/test2.txt"
+#define PARK_FILE	"sq3_data/park_sq3.txt"
+#define LXY_FILE	"sq3_data/lxy_sq3.txt"
 #define MAX_LINK 110
 #define MAX_NODE 50
 #define MAX_CAR 180
@@ -70,16 +71,17 @@ int search_lnum(int,int);
 int search_pnum(int);
 
 int distance[MAX_NODE],flag[MAX_NODE],before[MAX_NODE];
-
+#pragma omp threadprivate(l,n,c,p,distance,flag,before)
 /*
 ==============================
 メイン関数
 ==============================
 */
-float main(void)
+//!NEED CHANGE
+float simulate(int x, int y, int z)
 {
 	void init_struct(void);
-	void file_read(void);
+	void file_read(int x, int y, int z);
 	void flowout(float);
 	void start(float);
 	void parkout(float);
@@ -87,9 +89,10 @@ float main(void)
 	float ttave;
 	float t;
 	int i,j;
-	
 	init_struct();	//	構造体の初期化
-	file_read();	//	ファイルからのデータ読み出し
+
+	file_read(x,y,z);	//	ファイルからのデータ読み出し
+
 	for(t=0;t<MAX_TIME;t+=0.5)
 	{
 /*printf("\n%4.1f ",t);
@@ -124,6 +127,7 @@ if(int(t+0.5)%10==0 && (int)t%10!=0)
 		parkout(t);	//	駐車場からの出庫
 	}
 	ttave = calc_ttime();	//	平均旅行時間の計算
+//	printf("%d %d %d did %f\n", x,y,z,ttave);
 	//printf("\n%f",ttave);
 	//getchar();
 	return ttave;
@@ -162,13 +166,14 @@ void init_struct(void)
 }
 
 /*	ファイルからのデータ読み出し	*/
-void file_read(void)
+void file_read(int x, int y, int z)
 {
 	int i,num;
 	FILE *fp;
 
 	i=0;
 	fp=fopen(LINK_FILE,"r");
+
 	while(i<MAX_LINK && EOF!=fscanf(fp,"%d\t%d\t%d\t%d",&l[i].s,&l[i].t,&l[i].l,&l[i].b))
 	{
 		#if BEACON==0
@@ -177,9 +182,16 @@ void file_read(void)
 		#if BEACON==2
 			l[i].b=1;
 		#endif
+		//!NEED CHANGE
+		if (i == x ||i == y || i == z){
+			l[i].b=1;
+		}else{
+			l[i].b=0;
+		}
 		i+=1;
 	}
 	fclose(fp);
+
 
 	fp=fopen(LXY_FILE,"r");
 	while(i<MAX_NODE && EOF!=fscanf(fp," %d\t%lf\t%lf",&num,&n[i].x,&n[i].y))

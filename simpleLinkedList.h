@@ -1,7 +1,8 @@
-
+//!NEED CHANGE
 typedef struct {
-    int x;
-    int y;
+	int x;
+	int y;
+    int z;
 } DATA;
 
 typedef struct node {
