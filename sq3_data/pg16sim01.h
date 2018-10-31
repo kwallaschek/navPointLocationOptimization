@@ -1,2 +1,2 @@
-//!NEED CHANGE
-float simulate(int x, int y, int z);
+
+float simulate(int* locations, int num_nodes);

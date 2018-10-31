@@ -77,11 +77,10 @@ int distance[MAX_NODE],flag[MAX_NODE],before[MAX_NODE];
 メイン関数
 ==============================
 */
-//!NEED CHANGE
-float simulate(int x, int y, int z)
+float simulate(int* locations, int num_nodes)
 {
 	void init_struct(void);
-	void file_read(int x, int y, int z);
+	void file_read(int* locations, int num_nodes);
 	void flowout(float);
 	void start(float);
 	void parkout(float);
@@ -91,7 +90,7 @@ float simulate(int x, int y, int z)
 	int i,j;
 	init_struct();	//	構造体の初期化
 
-	file_read(x,y,z);	//	ファイルからのデータ読み出し
+	file_read(locations, num_nodes);	//	ファイルからのデータ読み出し
 
 	for(t=0;t<MAX_TIME;t+=0.5)
 	{
@@ -128,7 +127,7 @@ if(int(t+0.5)%10==0 && (int)t%10!=0)
 	}
 	ttave = calc_ttime();	//	平均旅行時間の計算
 //	printf("%d %d %d did %f\n", x,y,z,ttave);
-	//printf("\n%f",ttave);
+//	printf("\n%f",ttave);
 	//getchar();
 	return ttave;
 }
@@ -166,7 +165,7 @@ void init_struct(void)
 }
 
 /*	ファイルからのデータ読み出し	*/
-void file_read(int x, int y, int z)
+void file_read(int* locations, int num_nodes)
 {
 	int i,num;
 	FILE *fp;
@@ -182,11 +181,12 @@ void file_read(int x, int y, int z)
 		#if BEACON==2
 			l[i].b=1;
 		#endif
-		//!NEED CHANGE
-		if (i == x ||i == y || i == z){
-			l[i].b=1;
-		}else{
-			l[i].b=0;
+		l[i].b = 0;
+		for (int j = 0; j < num_nodes; j++){
+			if(i == locations[j]){
+				l[i].b = 1;
+				break;
+			}
 		}
 		i+=1;
 	}
