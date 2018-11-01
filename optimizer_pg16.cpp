@@ -145,8 +145,10 @@ int main (int argc, char *argv[]) {
 			
 		}
 
-		#pragma omp atomic
+		//#pragma omp atomic
 		counter++;
+		if(omp_get_thread_num() == 0)
+		{
 		int seconds = (double)(clock()-start)/(double)CLOCKS_PER_SEC;
 		seconds = (seconds/counter)*(size-counter);
 		int hours = seconds/3600;
@@ -156,6 +158,7 @@ int main (int argc, char *argv[]) {
 		printf("\r Simulated %d of %d...  Current minATT: %f  ETA: %d:%02d:%02dh",counter, size, minimalATT, hours, minutes, seconds);
 		fflush(stdout);
 		endSim = clock();
+		}
 		
 	}
 	#pragma omp barrier
